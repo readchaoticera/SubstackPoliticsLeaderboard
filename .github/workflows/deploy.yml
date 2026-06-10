@@ -1,0 +1,54 @@
+name: Deploy to GitHub Pages
+
+# Publishes the leaderboard to GitHub Pages. On each run it tries to pull the
+# latest live data from Substack (GitHub runners can reach substack.com); if
+# that fails it falls back to whatever data is committed in /data.
+on:
+  push:
+    branches: [main]
+  workflow_dispatch: {}
+  schedule:
+    # Refresh + redeploy daily at 13:00 UTC
+    - cron: "0 13 * * *"
+
+# Allow this workflow to publish Pages and create the github-pages deployment.
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+# Only one Pages deployment at a time.
+concurrency:
+  group: pages
+  cancel-in-progress: true
+
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+
+      - name: Fetch live leaderboard data (best effort)
+        continue-on-error: true
+        run: node scripts/fetch-leaderboard.mjs
+
+      - name: Configure Pages (auto-enables if needed)
+        uses: actions/configure-pages@v5
+        with:
+          enablement: true
+
+      - name: Upload site
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: .
+
+      - name: Deploy
+        id: deployment
+        uses: actions/deploy-pages@v4
