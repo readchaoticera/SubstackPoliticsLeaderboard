@@ -267,6 +267,17 @@ tbody tr:hover { background: #f4f9ff; }
 }
 .methodology ul { margin: 0; padding-left: 20px; color: var(--ink-soft); }
 .methodology li { margin-bottom: 8px; font-size: 0.92rem; }
+.footnote {
+  margin: 14px 0 0;
+  font-size: 0.84rem;
+  color: var(--ink-soft);
+}
+.est-mark {
+  color: var(--accent);
+  font-weight: 700;
+  cursor: help;
+  margin-left: 1px;
+}
 .methodology code {
   background: var(--accent-soft);
   padding: 1px 6px;

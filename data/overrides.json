@@ -1,0 +1,6 @@
+{
+  "_comment": "Manual data overrides applied at render time. These survive `npm run fetch` (which only rewrites the per-category subscriber data). Keyed by publication URL (matched case-insensitively, ignoring scheme / leading 'www.' / trailing slash). 'totalSubscribers' overrides the Total Subs value; 'estimated': true appends an asterisk that points to the footnote at the bottom of the page.",
+  "overrides": {
+    "https://www.thefp.com": { "totalSubscribers": 1500000, "estimated": true }
+  }
+}

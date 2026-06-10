@@ -20,6 +20,7 @@
     category: "us-politics",
     data: {}, // slug -> parsed json
     leans: null, // normalized url -> lean key
+    overrides: null, // normalized url -> manual data override
     sortKey: "rank",
     sortDir: 1, // 1 asc, -1 desc
     filter: "",
@@ -120,7 +121,7 @@
           <td data-label="Lean">${leanHTML(p)}</td>
           <td data-label="URL">${link}</td>
           <td class="num" data-label="Paid Subs">${paidBadgeHTML(p)}</td>
-          <td class="num" data-label="Total Subs">${fmtInt(p.freeSubscribers)}</td>
+          <td class="num" data-label="Total Subs">${fmtInt(p.freeSubscribers)}${p.totalEstimated ? '<span class="est-mark" title="Rough estimate — see notes at the bottom of the page">*</span>' : ""}</td>
         </tr>`;
       })
       .join("");
@@ -185,10 +186,31 @@
     }
   }
 
-  function enrichLeans(doc) {
+  async function loadOverrides() {
+    if (state.overrides) return;
+    state.overrides = {};
+    try {
+      const res = await fetch("data/overrides.json", { cache: "no-store" });
+      if (res.ok) {
+        const json = await res.json();
+        for (const [url, val] of Object.entries(json.overrides || {})) {
+          state.overrides[leanKey(url)] = val;
+        }
+      }
+    } catch {
+      /* no overrides file -> use fetched data as-is */
+    }
+  }
+
+  function enrich(doc) {
     if (!doc || !Array.isArray(doc.publications)) return;
     doc.publications.forEach((p) => {
       p.lean = (state.leans && state.leans[leanKey(p.url)]) || "unrated";
+      const ov = state.overrides && state.overrides[leanKey(p.url)];
+      if (ov) {
+        if (typeof ov.totalSubscribers === "number") p.freeSubscribers = ov.totalSubscribers;
+        p.totalEstimated = !!ov.estimated;
+      }
     });
   }
 
@@ -215,8 +237,8 @@
   async function selectCategory(slug) {
     state.category = slug;
     els.tabs.forEach((t) => t.classList.toggle("is-active", t.dataset.category === slug));
-    await Promise.all([loadCategory(slug), loadLeans()]);
-    enrichLeans(state.data[slug]);
+    await Promise.all([loadCategory(slug), loadLeans(), loadOverrides()]);
+    enrich(state.data[slug]);
     render();
   }
 
