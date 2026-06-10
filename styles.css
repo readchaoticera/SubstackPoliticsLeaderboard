@@ -167,6 +167,17 @@ main {
   margin-bottom: 18px;
 }
 
+.rank-note {
+  margin: 0 0 14px;
+  font-size: 0.84rem;
+  color: var(--ink-soft);
+  background: var(--accent-soft);
+  border-left: 3px solid var(--accent);
+  padding: 10px 14px;
+  border-radius: 0 8px 8px 0;
+}
+.rank-note strong { color: var(--accent-dark); }
+
 /* ---------- Table ---------- */
 .table-wrap {
   background: var(--paper-card);
