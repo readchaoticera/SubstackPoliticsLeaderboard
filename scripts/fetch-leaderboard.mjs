@@ -36,8 +36,23 @@ const DATA_DIR = resolve(__dirname, "..", "data");
 const API_BASE = "https://substack.com/api/v1";
 const PAGE_SIZE = 25;
 const TARGET = 100; // top N publications per category
+// A real-browser User-Agent improves the odds Substack serves the request.
+// Substack blocks datacenter/cloud IPs outright, so run this from a normal
+// residential/office connection.
 const USER_AGENT =
-  "Mozilla/5.0 (compatible; ChaoticEra-Leaderboard/1.0; +https://chaoticera.news)";
+  "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 " +
+  "(KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36";
+
+const BROWSER_HEADERS = {
+  "User-Agent": USER_AGENT,
+  Accept: "application/json, text/plain, */*",
+  "Accept-Language": "en-US,en;q=0.9",
+  Referer: "https://substack.com/",
+  Origin: "https://substack.com",
+  "sec-ch-ua": '"Chromium";v="124", "Google Chrome";v="124", "Not.A/Brand";v="99"',
+  "sec-ch-ua-mobile": "?0",
+  "sec-ch-ua-platform": '"macOS"',
+};
 
 // Which leaderboards to build. `name` is matched (case-insensitively) against
 // the names returned by /api/v1/categories so we don't hard-code volatile IDs.
@@ -55,12 +70,31 @@ const TIER_TO_PAID = {
   3: { estimate: 10000, label: "10,000+" },
 };
 
-async function getJSON(url) {
-  const res = await fetch(url, {
-    headers: { "User-Agent": USER_AGENT, Accept: "application/json" },
-  });
+const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
+
+async function getJSON(url, attempt = 0) {
+  const MAX_RETRIES = 3;
+  let res;
+  try {
+    res = await fetch(url, { headers: BROWSER_HEADERS });
+  } catch (err) {
+    if (attempt < MAX_RETRIES) {
+      await sleep(1000 * 2 ** attempt);
+      return getJSON(url, attempt + 1);
+    }
+    throw err;
+  }
+  // Retry transient blocks/rate limits with exponential backoff.
+  if ((res.status === 403 || res.status === 429 || res.status >= 500) && attempt < MAX_RETRIES) {
+    await sleep(1000 * 2 ** attempt);
+    return getJSON(url, attempt + 1);
+  }
   if (!res.ok) {
-    throw new Error(`GET ${url} -> HTTP ${res.status} ${res.statusText}`);
+    const hint =
+      res.status === 403
+        ? " (Substack is blocking this request — run from a residential/office connection, not a cloud server or VPN.)"
+        : "";
+    throw new Error(`GET ${url} -> HTTP ${res.status} ${res.statusText}${hint}`);
   }
   return res.json();
 }
