@@ -53,7 +53,7 @@
   }
 
   function totalSubsHTML(p) {
-    if (!(p.freeSubscribers > 0)) return '<span class="na">Not Available</span>';
+    if (!(p.freeSubscribers > 0)) return '<span class="na">N/A</span>';
     const mark = p.totalEstimated
       ? '<span class="est-mark" title="Rough estimate — see notes at the bottom of the page">*</span>'
       : "";
@@ -61,8 +61,9 @@
   }
 
   function paidBadgeHTML(pub) {
+    const label = pub.paidBadge;
+    if (!label || label === "—") return '<span class="na">N/A</span>';
     const tier = pub.bestsellerTier || 0;
-    const label = pub.paidBadge || "—";
     const detail = pub.paidDetail || "Estimated from Substack's Bestseller badge";
     return `<span class="badge badge-t${tier}" title="${escapeHTML(detail)}">${label}</span>`;
   }
@@ -140,7 +141,7 @@
         const host = hostFromUrl(p.url);
         const link = p.url
           ? `<a class="pub-link" href="${escapeHTML(p.url)}" target="_blank" rel="noopener">${escapeHTML(host)}</a>`
-          : "—";
+          : '<span class="na">N/A</span>';
         return `<tr>
           <td class="num" data-label="#"><span class="${rankClass}">${p.rank}</span></td>
           <td data-label="Author">${escapeHTML(p.author)}</td>
