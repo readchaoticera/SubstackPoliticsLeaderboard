@@ -357,6 +357,15 @@ tbody tr:hover { background: #f4f9ff; }
 }
 .site-footer a { color: #fff; }
 
+/* Embed mode (?embed=1): blend into a host page / iframe */
+.embed .masthead,
+.embed .site-footer {
+  display: none;
+}
+.embed .hero {
+  padding-top: 28px;
+}
+
 /* ---------- Responsive ---------- */
 @media (max-width: 720px) {
   .hero { padding: 36px 0 20px; }
