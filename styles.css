@@ -119,26 +119,14 @@ main {
 .chart-section {
   margin: 8px 0 26px;
 }
-.chart-head {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: baseline;
-  justify-content: space-between;
-  gap: 8px 18px;
-  margin-bottom: 10px;
-}
-.chart-head h2 {
-  font-family: var(--serif);
-  font-size: 1.25rem;
-  margin: 0;
-}
 .chart-legend {
   display: flex;
   flex-wrap: wrap;
   align-items: center;
-  gap: 6px 14px;
+  gap: 6px 16px;
   font-size: 0.8rem;
   color: var(--ink-soft);
+  margin-bottom: 10px;
 }
 .chart-legend .lg {
   display: inline-flex;
@@ -150,9 +138,6 @@ main {
   height: 11px;
   border-radius: 50%;
   display: inline-block;
-}
-.chart-legend .lg-note {
-  font-style: italic;
 }
 #bubble-chart {
   position: relative;
@@ -167,13 +152,6 @@ main {
   width: 100%;
   height: auto;
   display: block;
-}
-.bub-label {
-  fill: #fff;
-  font-family: var(--sans);
-  font-weight: 600;
-  pointer-events: none;
-  paint-order: stroke;
 }
 .bubble-tip {
   position: absolute;

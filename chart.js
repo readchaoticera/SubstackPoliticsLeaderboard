@@ -70,49 +70,63 @@
   }
 
   function render(el, items) {
-    const width = 1000;
-    const height = 440;
-    const pad = 1.5;
-
+    const PAD = 2; // minimum gap between bubble edges
     const maxT = d3.max(items, (d) => d.total) || 1;
-    const r = d3.scaleSqrt().domain([0, maxT]).range([3, 54]);
+    const r = d3.scaleSqrt().domain([0, maxT]).range([3.5, 52]);
+    // Seed positions in an ellipse taller than it is wide.
     items.forEach((d, i) => {
       d.r = r(d.total);
-      d.x = (i / items.length) * width; // spread horizontally to seed a landscape layout
-      d.y = height / 2 + (Math.random() - 0.5) * 40;
+      const a = (i / items.length) * 2 * Math.PI;
+      d.x = Math.cos(a) * 90;
+      d.y = Math.sin(a) * 140;
     });
 
-    // Pack into a wide band: weak horizontal centering, stronger vertical.
+    // Force pass for an even, vertically-biased cluster (stronger vertical pull
+    // = narrower/taller). forceX weaker than forceY -> less wide than tall.
     const sim = d3
       .forceSimulation(items)
-      .force("x", d3.forceX(width / 2).strength(0.015))
-      .force("y", d3.forceY(height / 2).strength(0.18))
-      .force("collide", d3.forceCollide((d) => d.r + pad).iterations(4))
+      .force("x", d3.forceX(0).strength(0.02))
+      .force("y", d3.forceY(0).strength(0.18))
+      .force("collide", d3.forceCollide((d) => d.r + PAD).iterations(6).strength(1))
       .stop();
-    for (let i = 0; i < 320; i++) sim.tick();
+    for (let i = 0; i < 400; i++) sim.tick();
 
-    // Clamp inside the viewBox.
-    items.forEach((d) => {
-      d.x = Math.max(d.r, Math.min(width - d.r, d.x));
-      d.y = Math.max(d.r, Math.min(height - d.r, d.y));
-    });
+    // Deterministic relaxation pass to GUARANTEE no two bubbles overlap.
+    resolveOverlaps(items, PAD, 400);
+
+    // Fit the viewBox tightly to the resulting cluster (no clipping, no gaps).
+    let minX = Infinity, minY = Infinity, maxX = -Infinity, maxY = -Infinity;
+    for (const d of items) {
+      minX = Math.min(minX, d.x - d.r);
+      maxX = Math.max(maxX, d.x + d.r);
+      minY = Math.min(minY, d.y - d.r);
+      maxY = Math.max(maxY, d.y + d.r);
+    }
+    const m = 4;
+    const vbX = minX - m, vbY = minY - m;
+    const vbW = maxX - minX + 2 * m, vbH = maxY - minY + 2 * m;
 
     const svg = d3
       .select(el)
       .append("svg")
-      .attr("viewBox", `0 0 ${width} ${height}`)
+      .attr("viewBox", `${vbX} ${vbY} ${vbW} ${vbH}`)
       .attr("class", "bubbles-svg")
       .attr("role", "img")
       .attr("aria-label", "Packed bubbles of Substack publications, sized by subscribers and coloured by partisan lean");
 
     const tip = d3.select(el).append("div").attr("class", "bubble-tip").style("opacity", 0);
 
-    const g = svg
-      .selectAll("g.bub")
+    svg
+      .selectAll("circle")
       .data(items)
-      .join("g")
-      .attr("class", "bub")
-      .attr("transform", (d) => `translate(${d.x},${d.y})`)
+      .join("circle")
+      .attr("cx", (d) => d.x)
+      .attr("cy", (d) => d.y)
+      .attr("r", (d) => d.r)
+      .attr("fill", (d) => COLORS[d.lean] || COLORS.unrated)
+      .attr("fill-opacity", 0.88)
+      .attr("stroke", (d) => d3.color(COLORS[d.lean] || COLORS.unrated).darker(0.6))
+      .attr("stroke-width", 0.6)
       .style("cursor", "pointer")
       .on("mousemove", function (event, d) {
         const [mx, my] = d3.pointer(event, el);
@@ -128,27 +142,32 @@
       })
       .on("mouseleave", () => tip.style("opacity", 0))
       .on("click", (event, d) => d.url && window.open(d.url, "_blank", "noopener"));
-
-    g.append("circle")
-      .attr("r", (d) => d.r)
-      .attr("fill", (d) => COLORS[d.lean] || COLORS.unrated)
-      .attr("fill-opacity", 0.85)
-      .attr("stroke", (d) => d3.color(COLORS[d.lean] || COLORS.unrated).darker(0.6))
-      .attr("stroke-width", 0.75);
-
-    // Label only bubbles big enough to hold readable text.
-    g.filter((d) => d.r >= 26)
-      .append("text")
-      .attr("class", "bub-label")
-      .attr("text-anchor", "middle")
-      .attr("dy", "0.32em")
-      .style("font-size", (d) => Math.max(8, Math.min(13, d.r / 3.2)) + "px")
-      .text((d) => shorten(d.name, d.r));
   }
 
-  function shorten(name, radius) {
-    const max = Math.max(5, Math.floor(radius / 3.2));
-    return name.length > max ? name.slice(0, max - 1).trimEnd() + "…" : name;
+  // Push overlapping circles apart until none overlap (or maxPasses reached).
+  function resolveOverlaps(items, pad, maxPasses) {
+    for (let pass = 0; pass < maxPasses; pass++) {
+      let moved = false;
+      for (let i = 0; i < items.length; i++) {
+        const a = items[i];
+        for (let j = i + 1; j < items.length; j++) {
+          const b = items[j];
+          let dx = b.x - a.x;
+          let dy = b.y - a.y;
+          let dist = Math.sqrt(dx * dx + dy * dy) || 0.001;
+          const min = a.r + b.r + pad;
+          if (dist < min) {
+            const shift = (min - dist) / 2 / dist;
+            const sx = dx * shift;
+            const sy = dy * shift;
+            a.x -= sx; a.y -= sy;
+            b.x += sx; b.y += sy;
+            moved = true;
+          }
+        }
+      }
+      if (!moved) break;
+    }
   }
 
   function escapeHTML(s) {
