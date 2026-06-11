@@ -176,6 +176,19 @@
         els.banner.hidden = true;
       }
     }
+    postHeight();
+  }
+
+  // Report our document height to a parent frame (for auto-resizing embeds).
+  function postHeight() {
+    try {
+      if (window.parent && window.parent !== window) {
+        const h = Math.ceil(document.documentElement.getBoundingClientRect().height);
+        window.parent.postMessage({ type: "chaoticera-embed-height", height: h }, "*");
+      }
+    } catch (e) {
+      /* cross-origin parent without access is fine */
+    }
   }
 
   function updateHeaderIndicators() {
@@ -305,6 +318,14 @@
     });
     updateHeaderIndicators();
     selectCategory(state.category);
+
+    // When embedded, keep the parent frame sized to our content.
+    if (window.parent && window.parent !== window) {
+      window.addEventListener("load", postHeight);
+      window.addEventListener("resize", postHeight);
+      if (window.ResizeObserver) new ResizeObserver(postHeight).observe(document.body);
+      setTimeout(postHeight, 600); // after fonts/chart settle
+    }
   }
 
   document.addEventListener("DOMContentLoaded", init);
