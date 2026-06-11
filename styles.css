@@ -92,7 +92,7 @@ main {
 }
 
 /* ---------- Hero ---------- */
-.hero { padding: 56px 0 28px; max-width: 760px; }
+.hero { padding: 56px 0 28px; }
 .kicker {
   text-transform: uppercase;
   letter-spacing: 0.16em;
