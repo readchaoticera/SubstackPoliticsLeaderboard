@@ -85,7 +85,7 @@
     // = narrower/taller). forceX weaker than forceY -> less wide than tall.
     const sim = d3
       .forceSimulation(items)
-      .force("x", d3.forceX(0).strength(0.02))
+      .force("x", d3.forceX(0).strength(0.025))
       .force("y", d3.forceY(0).strength(0.18))
       .force("collide", d3.forceCollide((d) => d.r + PAD).iterations(6).strength(1))
       .stop();
