@@ -235,7 +235,7 @@
     "https://www.declassified.live": "right",
     "https://www.allysammarco.com": "right",
     "https://www.wonkette.com": "left",
-    "https://www.joshbarro.com": "neutral",
+    "https://www.joshbarro.com": "left",
     "https://margaretsullivan.substack.com": "left",
     "https://freebeacon.substack.com": "right",
     "https://krassencast.com": "left",
@@ -252,7 +252,7 @@
     "https://www.hamiltonnolan.com": "left",
     "https://www.tarapalmeri.com": "neutral",
     "https://leandroruschel.substack.com": "right",
-    "https://www.theunpopulist.net": "neutral",
+    "https://www.theunpopulist.net": "left",
     "https://salaambhattiforcongress.substack.com": "left",
     "https://jimhightower.substack.com": "left",
     "https://glennshow.com": "right",
@@ -261,7 +261,7 @@
     "https://anncoulter.substack.com": "right",
     "https://libertysentinel.substack.com": "right",
     "https://eyesonice.substack.com": "left",
-    "https://www.pantsuitpoliticsshow.com": "neutral",
+    "https://www.pantsuitpoliticsshow.com": "left",
     "https://www.sashastone.com": "right",
     "https://vanjones.substack.com": "left",
     "https://www.ettingermentum.news": "left",
@@ -327,6 +327,15 @@
     "https://objectioneverything.substack.com": "left",
     "https://palestinechronicle.substack.com": "left",
     "https://www.thewestervillenews.com": "neutral",
-    "https://radleybalko.substack.com": "left"
+    "https://radleybalko.substack.com": "left",
+    "https://andrawatkins.substack.com": "left",
+    "https://inpursuit.substack.com": "neutral",
+    "https://counterpoint.substack.com": "left",
+    "https://www.thewomenpost.com": "left",
+    "https://newsletter.amuseonx.com": "right",
+    "https://amandasmildtakes.substack.com": "left",
+    "https://theswamp.substack.com": "left",
+    "https://newsletter.ofthebrave.org": "left",
+    "https://www.dailyfrontlines.com": "right"
   }
 }

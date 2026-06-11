@@ -1,7 +1,8 @@
 {
-  "_comment": "Manual data overrides applied at render time. These survive `npm run fetch` (which only rewrites the per-category subscriber data). Keyed by publication URL (matched case-insensitively, ignoring scheme / leading 'www.' / trailing slash). 'totalSubscribers' overrides the Total Subs value; 'estimated': true appends an asterisk that points to the footnote at the bottom of the page.",
+  "_comment": "Manual data overrides applied at render time. These survive `npm run fetch` (which only rewrites the per-category subscriber data). Keyed by publication URL (matched case-insensitively, ignoring scheme / leading 'www.' / trailing slash). 'totalSubscribers' overrides the Total Subs value; 'estimated': true appends an asterisk that points to the footnote; 'displayUrl' overrides only the link shown in the URL column (the original URL is still used to match lean/baseline data).",
   "overrides": {
     "https://www.thefp.com": { "totalSubscribers": 1500000, "estimated": true },
-    "https://endlessurgency.com": { "totalSubscribers": 1100000, "estimated": true }
+    "https://endlessurgency.com": { "totalSubscribers": 1100000, "estimated": true },
+    "https://glennshow.com": { "displayUrl": "https://glennloury.substack.com" }
   }
 }

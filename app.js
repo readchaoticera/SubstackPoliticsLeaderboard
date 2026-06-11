@@ -138,9 +138,10 @@
     els.rows.innerHTML = list
       .map((p) => {
         const rankClass = p.rank <= 3 ? `rank rank-${p.rank}` : "rank";
-        const host = hostFromUrl(p.url);
-        const link = p.url
-          ? `<a class="pub-link" href="${escapeHTML(p.url)}" target="_blank" rel="noopener">${escapeHTML(host)}</a>`
+        const linkUrl = p.linkUrl || p.url;
+        const host = hostFromUrl(linkUrl);
+        const link = linkUrl
+          ? `<a class="pub-link" href="${escapeHTML(linkUrl)}" target="_blank" rel="noopener">${escapeHTML(host)}</a>`
           : '<span class="na">N/A</span>';
         return `<tr>
           <td class="num" data-label="#"><span class="${rankClass}">${p.rank}</span></td>
@@ -255,6 +256,7 @@
       if (ov) {
         if (typeof ov.totalSubscribers === "number") p.freeSubscribers = ov.totalSubscribers;
         p.totalEstimated = !!ov.estimated;
+        if (ov.displayUrl) p.linkUrl = ov.displayUrl;
       }
       // 1-year growth = current total minus baseline (only when both are known).
       const base = state.baselines && state.baselines[leanKey(p.url)];
