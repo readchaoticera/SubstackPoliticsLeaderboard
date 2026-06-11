@@ -262,7 +262,7 @@ thead th {
   letter-spacing: 0.08em;
   color: var(--ink-soft);
   font-weight: 700;
-  padding: 14px 16px;
+  padding: 11px 11px;
   background: #f1f7fe;
   border-bottom: 2px solid var(--line-strong);
   white-space: nowrap;
@@ -284,9 +284,9 @@ th.sortable[aria-sort="descending"]::after { content: "↓"; opacity: 1; color: 
 }
 
 tbody td {
-  padding: 13px 16px;
+  padding: 10px 11px;
   border-bottom: 1px solid var(--line);
-  font-size: 0.92rem;
+  font-size: 0.84rem;
   vertical-align: middle;
 }
 tbody tr:last-child td { border-bottom: 0; }
@@ -354,8 +354,16 @@ tbody tr:hover { background: #f4f9ff; }
 .na {
   color: var(--ink-soft);
   font-variant-numeric: normal;
-  font-size: 0.82rem;
+  font-size: 0.8rem;
 }
+.growth {
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+.growth-up { color: #15803d; }
+.growth-down { color: #dc2626; }
+.growth-flat { color: var(--ink-soft); }
 .est-mark {
   color: var(--accent);
   font-weight: 700;

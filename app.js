@@ -21,6 +21,7 @@
     data: {}, // slug -> parsed json
     leans: null, // normalized url -> lean key
     overrides: null, // normalized url -> manual data override
+    baselines: null, // normalized url -> total subs on the baseline date
     sortKey: "rank",
     sortDir: 1, // 1 asc, -1 desc
     filter: "",
@@ -37,6 +38,19 @@
   };
 
   const NF = new Intl.NumberFormat("en-US");
+
+  function growthHTML(p) {
+    if (p.growth == null) return '<span class="na">N/A</span>';
+    const sign = p.growth > 0 ? "+" : p.growth < 0 ? "−" : "";
+    const cls = p.growth > 0 ? "growth-up" : p.growth < 0 ? "growth-down" : "growth-flat";
+    return `<span class="growth ${cls}" title="${sign}${NF.format(Math.abs(p.growth))} since Jun 10, 2025">${sign}${abbrev(Math.abs(p.growth))}</span>`;
+  }
+
+  function abbrev(n) {
+    if (n >= 1_000_000) return `${+(n / 1_000_000).toFixed(1)}M`;
+    if (n >= 1_000) return `${Math.round(n / 1_000)}K`;
+    return `${n}`;
+  }
 
   function totalSubsHTML(p) {
     if (!(p.freeSubscribers > 0)) return '<span class="na">Not Available</span>';
@@ -88,6 +102,15 @@
 
   function compare(a, b) {
     const k = state.sortKey;
+    // Growth: rows without data (N/A) always sort to the bottom.
+    if (k === "growth") {
+      const an = a.growth == null;
+      const bn = b.growth == null;
+      if (an && bn) return 0;
+      if (an) return 1;
+      if (bn) return -1;
+      return (a.growth - b.growth) * state.sortDir;
+    }
     let va = a[k];
     let vb = b[k];
     if (typeof va === "string" || typeof vb === "string") {
@@ -126,6 +149,7 @@
           <td data-label="URL">${link}</td>
           <td class="num" data-label="Paid Subs">${paidBadgeHTML(p)}</td>
           <td class="num" data-label="Total Subs">${totalSubsHTML(p)}</td>
+          <td class="num" data-label="1-Yr Growth">${growthHTML(p)}</td>
         </tr>`;
       })
       .join("");
@@ -206,6 +230,22 @@
     }
   }
 
+  async function loadBaselines() {
+    if (state.baselines) return;
+    state.baselines = {};
+    try {
+      const res = await fetch("data/baseline.json", { cache: "no-store" });
+      if (res.ok) {
+        const json = await res.json();
+        for (const [url, val] of Object.entries(json.baselines || {})) {
+          state.baselines[leanKey(url)] = val;
+        }
+      }
+    } catch {
+      /* no baseline file -> growth shows N/A everywhere */
+    }
+  }
+
   function enrich(doc) {
     if (!doc || !Array.isArray(doc.publications)) return;
     doc.publications.forEach((p) => {
@@ -215,6 +255,9 @@
         if (typeof ov.totalSubscribers === "number") p.freeSubscribers = ov.totalSubscribers;
         p.totalEstimated = !!ov.estimated;
       }
+      // 1-year growth = current total minus baseline (only when both are known).
+      const base = state.baselines && state.baselines[leanKey(p.url)];
+      p.growth = p.freeSubscribers > 0 && typeof base === "number" ? p.freeSubscribers - base : null;
     });
   }
 
@@ -241,7 +284,7 @@
   async function selectCategory(slug) {
     state.category = slug;
     els.tabs.forEach((t) => t.classList.toggle("is-active", t.dataset.category === slug));
-    await Promise.all([loadCategory(slug), loadLeans(), loadOverrides()]);
+    await Promise.all([loadCategory(slug), loadLeans(), loadOverrides(), loadBaselines()]);
     enrich(state.data[slug]);
     render();
   }
