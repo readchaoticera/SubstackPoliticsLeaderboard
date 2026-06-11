@@ -43,11 +43,11 @@ internet connection. To pull fresh numbers:
 
 ```bash
 # Run on your own computer (Node 18+), where Substack is reachable:
-npm run fetch          # top 100 per category -> data/us-politics.json, data/news.json
+npm run fetch          # top 250 per category -> data/us-politics.json, data/news.json
 git add data/ && git commit -m "Refresh leaderboard data" && git push
 ```
 
-By default it pulls the **top 100** per category. To pull more (Substack's
+By default it pulls the **top 250** per category. To pull a different amount (Substack's
 category listing usually contains far more than 100), pass a limit — the fetch
 stops automatically when Substack reports no more results:
 

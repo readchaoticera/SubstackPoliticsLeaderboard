@@ -35,7 +35,7 @@ const DATA_DIR = resolve(__dirname, "..", "data");
 
 const API_BASE = "https://substack.com/api/v1";
 const PAGE_SIZE = 25;
-const DEFAULT_LIMIT = 100; // top N per category; override with --limit N (or --limit all)
+const DEFAULT_LIMIT = 250; // top N per category; override with --limit N (or --limit all)
 const MAX_PAGES = 1000; // hard safety stop (~25k publications)
 // A real-browser User-Agent improves the odds Substack serves the request.
 // Substack blocks datacenter/cloud IPs outright, so run this from a normal
