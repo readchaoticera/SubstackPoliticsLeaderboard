@@ -22,8 +22,8 @@
     leans: null, // normalized url -> lean key
     overrides: null, // normalized url -> manual data override
     baselines: null, // normalized url -> total subs on the baseline date
-    sortKey: "rank",
-    sortDir: 1, // 1 asc, -1 desc
+    sortKey: "freeSubscribers", // default: Total Subs
+    sortDir: -1, // largest first
     filter: "",
   };
 
@@ -144,7 +144,7 @@
           ? `<a class="pub-link" href="${escapeHTML(linkUrl)}" target="_blank" rel="noopener">${escapeHTML(host)}</a>`
           : '<span class="na">N/A</span>';
         return `<tr>
-          <td class="num" data-label="#"><span class="${rankClass}">${p.rank}</span></td>
+          <td class="num" data-label="Substack Rank"><span class="${rankClass}">${p.rank}</span></td>
           <td data-label="Author">${escapeHTML(p.author)}</td>
           <td data-label="Publication" class="pub-name">${escapeHTML(p.publicationName)}</td>
           <td data-label="Lean">${leanHTML(p)}</td>
